@@ -11,6 +11,6 @@ export const Container = styled.div`
   min-height: 300px;
   border-radius: 8px;
   box-shadow: rgba(46, 0, 0, 0.5) 5px 13px 18px;
-  background-color: #79b17e;
+  background-color: powderblue;
 
 `
