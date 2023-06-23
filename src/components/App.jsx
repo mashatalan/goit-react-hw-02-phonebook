@@ -7,10 +7,21 @@ import { Container } from './App.styled';
 import Phonebook from './Phonebook';
 import ContactList from './ContactList';
 import Filter from './Filter';
+import css from './Notification.module.css';
 
 
 const notification = (message) => {
-  toast.warn(message);
+  toast.warn(`🦄 ${message}`, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    className: css.custom,
+    theme: "light",
+  });
 };
 
 class App extends Component {
