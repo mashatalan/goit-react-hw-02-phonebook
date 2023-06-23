@@ -1,9 +1,17 @@
 import React, { Component } from 'react';
 import { nanoid } from 'nanoid';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 import { Container } from './App.styled';
 import Phonebook from './Phonebook';
 import ContactList from './ContactList';
 import Filter from './Filter';
+
+
+const notification = (message) => {
+  toast.warn(message);
+};
 
 class App extends Component {
   state = {
@@ -16,24 +24,33 @@ class App extends Component {
     filter: '',
   };
 
-  addContact = (newName, number) => {
+  isContactUnique = (newName) => {
+    return this.state.contacts.some(({ name }) => name === newName);
+  };
+
+  validateName = (name) => {
     const namePattern = /^[a-zA-Zа-яА-Я]+(([' -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$/;
+    return namePattern.test(name);
+  };
+
+  validateNumber = (number) => {
     const numberPattern = /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/;
+    return numberPattern.test(number);
+  };
 
-    const isNotUnique = this.state.contacts.some(
-      ({ name }) => name === newName,
-    );
-    if (isNotUnique) {
-      return alert(`${newName} is already in contacts.`);
-    }
-
-    if (!namePattern.test(newName)) {
-      alert('Please enter a valid name');
+  addContact = (newName, number) => {
+    if (this.isContactUnique(newName)) {
+      notification(`${newName} is already in contacts.`);
       return;
     }
 
-    if (!numberPattern.test(number)) {
-      alert('Please enter a valid phone number');
+    if (!this.validateName(newName)) {
+      notification('Please enter a valid name');
+      return;
+    }
+
+    if (!this.validateNumber(number)) {
+      notification('Please enter a valid phone number');
       return;
     }
 
@@ -42,15 +59,21 @@ class App extends Component {
       name: newName,
       number,
     };
-    this.setState(({ contacts }) => ({
-      contacts: [newContact, ...contacts],
+
+    this.setState(prevState => ({
+      contacts: [newContact, ...prevState.contacts],
     }));
   };
 
   deleteContact = contactId => {
-    this.setState(({ contacts }) => ({
-      contacts: contacts.filter(contact => contact.id !== contactId),
-    }));
+    const deletedContact = this.state.contacts.find(contact => contact.id === contactId);
+    if (deletedContact) {
+      const { name } = deletedContact;
+      this.setState(({ contacts }) => ({
+        contacts: contacts.filter(contact => contact.id !== contactId),
+      }));
+      notification(`Deleted contact: ${name}`);
+    }
   };
 
   changeFilter = evt => {
@@ -59,14 +82,16 @@ class App extends Component {
 
   filterList = () => {
     const { contacts, filter } = this.state;
-    const normalizedFilter = filter.toLocaleLowerCase();
+    const normalizedFilter = filter.toLowerCase();
     return contacts.filter(contact =>
-      contact.name.toLocaleLowerCase().includes(normalizedFilter),
+      contact.name.toLowerCase().includes(normalizedFilter),
     );
   };
 
   render() {
     const { filter } = this.state;
+    const filteredContacts = this.filterList();
+
     return (
       <Container>
         <h1>Phonebook</h1>
@@ -74,10 +99,15 @@ class App extends Component {
 
         <h2>Contacts</h2>
         <Filter value={filter} onChange={this.changeFilter} />
-        <ContactList
-          contacts={this.filterList()}
-          onDeleteContact={this.deleteContact}
-        />
+        {filteredContacts.length > 0 ? (
+          <ContactList
+            contacts={filteredContacts}
+            onDeleteContact={this.deleteContact}
+          />
+        ) : (
+          <p>No contacts found</p>
+        )}
+        <ToastContainer />
       </Container>
     );
   }

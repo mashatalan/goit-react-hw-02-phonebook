@@ -15,7 +15,7 @@ class Phonebook extends Component {
     });
   };
 
-  handleSubmit = event => {
+  handleSubmit = (event) => {
     const { name, number } = this.state;
     event.preventDefault();
     this.props.onAddContact(name, number);
